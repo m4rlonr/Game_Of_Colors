@@ -1,0 +1,162 @@
+<meta charset="UTF-8">
+<!-- VUEJS -->
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<!--  BOOTSTRAP DATA -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-q2kxQ16AaE6UbzuKqyBE9/u/KzioAlnx2maXQHiDX9d4/zp8Ok3f+M7DPm+Ib6IU" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj" crossorigin="anonymous"></script>
+
+<div id="app" >
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="navbar navbar-dark bg-dark dense">
+        <span style="color: white;">Score: {{ score }}</span>
+        <span style="color: white;">Chances: {{ chance }}</span>
+        
+        <div v-if="startGame" style="display: flex; flex-direction: row;">
+          <span style="color: white; margin-right: 0.5rem;"> {{ message }} </span>
+          <div id="RoundColor" :style="{backgroundColor: corRound}" style="height: 1.6rem; width: 1.6rem; border-radius: 25px;"></div>
+        </div>
+        <div v-else>
+          <span style="color: white;"> Vamos brincar! </span>
+        </div>
+        <span style="color: white;">Record: {{ record }}</span>
+        <button v-if="!startGame" @click="startInit" type="button" class="btn btn-primary btn-sm">Start</button>
+        <button v-else @click="fimGame()" type="button" class="btn btn-primary btn-sm">Stop</button>
+      </nav>
+    </div>
+    <div class="row">
+      <div  style="height: 35.2rem;" class="col" style="background-color: #ADD8E6;">
+        <div class="container-fluid bg-secondary" style="margin-top: 1.2rem; height: 33rem; width: 33rem; border-radius: 1rem;">
+          <table v-if="startGame" style="display: flex; flex-direction: column; justify-content: center; align-items: center;" class="table table-borderless ">
+            <tbody>
+              <tr v-for="c in 8" class="m-0 pa-0">
+                <td v-for="i in 8">
+                  <div
+                    :id=`${c}${i}`
+                    :style="{backgroundColor: randonColor()}" 
+                    style="height: 3rem; width: 3rem; border-radius: 25px;"
+                    @click="consulta(this.event.srcElement)"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else style="text-align: center;">
+            <span style="color: white; font-size: 64px; ">Aguardando start!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div style="color: white; height: 1.9rem" class="col bg-dark bg-gradient">
+        <span style="color: white;">Marlon Rodrigues - </span>
+        <span style="color: white;">Ciência da computação 2020/5</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      startGame: false,
+      score: 0,
+      corRound: '',
+      message: "Você deve clicar na cor",
+      colors: [ "#0000FF","#008000","#A020F0"],
+      chance: 5,
+      acerto: 0,
+      record: 0,
+    },
+    methods:{
+      startInit(){
+        this.corRound = this.randonColor()
+        this.startGame = !this.startGame
+      }, 
+      randonColor() {
+        let value = Math.floor(Math.random() * 3)
+        color = this.colors[value]
+        return color
+      },
+      consulta(e){
+        let id = e.attributes[0].nodeValue
+        var elemento = document.getElementById(id);
+        cor = elemento.style.backgroundColor.split('rgb')[1]
+
+        let r = parseInt(cor.split(',')[0].split('(')[1]).toString(16)
+        let g = parseInt(cor.split(' ')[1].split(',')[0]).toString(16)
+        let b = parseInt(cor.split(' ')[2].split(')')[0]).toString(16)
+        
+        let hex = '#'
+
+        if(r.length === 1){
+          hex = hex + '00';
+        } else {
+          hex = hex + r
+        }
+
+        if(g.length === 1){
+          hex = hex + '00';
+        } else {
+          hex = hex + g
+        }
+
+        if(b.length === 1){
+          hex = hex + '00';
+        } else {
+          hex = hex + b
+        }
+
+        if(hex.toUpperCase() === this.corRound) {
+          document.getElementById(id).style.backgroundColor = this.randonColor();
+          this.maisPonto();
+        } else {
+          this.menosPonto()
+          document.getElementById(id).style.backgroundColor = this.randonColor();
+        }
+      },
+      maisPonto(){
+        this.score += 1;
+        this.acerto += 1;
+        if(this.acerto <= 6) {
+          this.acerto = 1;
+          novaCor = this.randonColor()
+          this.corRound = novaCor
+          document.getElementById('RoundColor').style.backgroundColor = novaCor;
+        }
+      },
+      menosPonto(){
+        this.chance -= 1;
+        if(this.chance === 0) {
+          this.fimGame()
+        }
+      },
+      fimGame(){
+        console.log("passou")
+        if(this.score !== 0) {
+          alert(`O jogo acabou, você fez ${this.score} pontos`)
+          if (this. score > this.record) {
+            alert(`Novo record registrado ${this.score} o antigo foi ${this.record}`)
+            localStorage.setItem("record", `${this.score}`);
+            this.record = this.score
+          }
+        }
+        this.startGame = false
+        this.chance = 5
+        this.score = 0
+        this.acerto = 0
+      }
+    },
+    created(){
+      if(localStorage.getItem("record") === null) {
+        this.record = 0
+      } else (
+        this.record = parseInt(localStorage.getItem("record"))
+      )
+    }
+  })
+</script>
